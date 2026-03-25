@@ -1,0 +1,115 @@
+services:
+  # ============================================
+  # DATABASE - MySQL 8.0
+  # ============================================
+  database:
+    image: mysql:8.0
+    container_name: musically_database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: Musically_Symfony_Typ_React
+      MYSQL_USER: musically_user
+      MYSQL_PASSWORD: musically_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - musically_mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - musically_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # PHPMYADMIN
+  # ============================================
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: musically_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8082:80"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - musically_network
+
+  # ============================================
+  # BACKEND - Symfony 7 + PHP 8.3
+  # ============================================
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: musically_php
+    restart: unless-stopped
+    working_dir: /var/www/symfony
+    volumes:
+      - ./backend:/var/www/symfony
+    ports:
+      - "8000:8000"
+    command: php -S 0.0.0.0:8000 -t public
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - musically_network
+
+  # ============================================
+  # FRONTEND - React + TypeScript + Vite
+  # ============================================
+  node:
+    build:
+      context: ./docker/node
+      dockerfile: Dockerfile
+    container_name: musically_node
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:5173"
+    networks:
+      - musically_network
+
+  # ============================================
+  # MERCURE - Hub temps réel (SSE)
+  # ============================================
+  mercure:
+    image: dunglas/mercure
+    container_name: musically_mercure
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ':80'
+      MERCURE_PUBLISHER_JWT_KEY: 'my-secret-key-for-musically-change-it'
+      MERCURE_SUBSCRIBER_JWT_KEY: 'my-secret-key-for-musically-change-it'
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins http://localhost:3000
+        anonymous
+    ports:
+      - "8083:80"
+    networks:
+      - musically_network
+
+# ============================================
+# VOLUMES
+# ============================================
+volumes:
+  musically_mysql_data:
+    driver: local
+
+# ============================================
+# NETWORK
+# ============================================
+networks:
+  musically_network:
+    driver: bridge

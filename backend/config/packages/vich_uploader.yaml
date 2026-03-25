@@ -1,0 +1,23 @@
+vich_uploader:
+    db_driver: orm
+    
+    mappings:
+        styles:
+            uri_prefix: /uploads/styles
+            upload_destination: '%kernel.project_dir%/public/uploads/styles'
+            namer: Vich\UploaderBundle\Naming\UniqidNamer
+        
+        instruments:
+            uri_prefix: /uploads/instruments
+            upload_destination: '%kernel.project_dir%/public/uploads/instruments'
+            namer: Vich\UploaderBundle\Naming\UniqidNamer
+        
+        users:
+            uri_prefix: /uploads/users
+            upload_destination: '%kernel.project_dir%/public/uploads/users'
+            namer: Vich\UploaderBundle\Naming\UniqidNamer
+        
+        bands:
+            uri_prefix: /uploads/bands
+            upload_destination: '%kernel.project_dir%/public/uploads/bands'
+            namer: Vich\UploaderBundle\Naming\UniqidNamer
