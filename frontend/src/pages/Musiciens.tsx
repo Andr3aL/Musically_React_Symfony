@@ -4,7 +4,11 @@ import { usersService } from '../services/api';
 import MusicianCard from '../components/MusicianCard';
 import type { User } from '../types';
 
-function Musiciens() {
+interface MusiciensProps {
+    currentUser: User | null;
+}
+
+function Musiciens({ currentUser }: MusiciensProps) {
     const [musicians, setMusicians] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -18,7 +22,9 @@ function Musiciens() {
     const loadMusicians = async (): Promise<void> => {
         try {
             const response = await usersService.getAll();
-            setMusicians(response.data['hydra:member'] || []);
+            const all = (response.data['hydra:member'] || [])
+                .filter((m: User) => m.id !== currentUser?.id);
+            setMusicians(all);
         } catch (error) {
             console.error('Erreur:', error);
         } finally {
@@ -36,7 +42,7 @@ function Musiciens() {
         setSearching(true);
         try {
             const response = await usersService.search(query);
-            setSearchResults(response.data);
+            setSearchResults(response.data.filter((m: User) => m.id !== currentUser?.id));
         } catch (error) {
             console.error('Erreur recherche:', error);
         } finally {

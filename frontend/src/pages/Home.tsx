@@ -23,11 +23,12 @@ function Home({ currentUser }: HomeProps) {
     const loadMusicians = async (): Promise<void> => {
         try {
             const response = await usersService.getAll();
-            const allMusicians = response.data['hydra:member'] || [];
-            
+            const allMusicians = (response.data['hydra:member'] || [])
+                .filter((m: User) => m.id !== currentUser?.id);
+
             // Filtrer les musiciens proches (même ville)
-            const nearby = allMusicians.filter(m => m.city === currentUser?.city);
-            const others = allMusicians.filter(m => m.city !== currentUser?.city);
+            const nearby = allMusicians.filter((m: User) => m.city === currentUser?.city);
+            const others = allMusicians.filter((m: User) => m.city !== currentUser?.city);
             
             setNearbyMusicians(nearby);
             setMusicians(others);
@@ -48,7 +49,7 @@ function Home({ currentUser }: HomeProps) {
         setSearching(true);
         try {
             const response = await usersService.search(query);
-            setSearchResults(response.data);
+            setSearchResults(response.data.filter((m: User) => m.id !== currentUser?.id));
         } catch (error) {
             console.error('Erreur recherche:', error);
         } finally {

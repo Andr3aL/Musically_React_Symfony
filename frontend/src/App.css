@@ -1,13 +1,26 @@
 /* Variables */
 :root {
     --primary-blue: #1A4B84;
+    --primary-blue-light: #2563a8;
     --accent-red: #E63946;
+    --accent-red-light: #ef4f5c;
+    --accent-red-dark: #c92d39;
     --light-bg: #F8F9FA;
     --dark-blue: #3D5A80;
+    --dark-blue-deep: #2c4460;
     --beige: #F8EAD6;
     --white: #FFFFFF;
-    --text-dark: #333333;
-    --text-light: #666666;
+    --text-dark: #2d3436;
+    --text-light: #636e72;
+    --glass-white: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.18);
+    --gradient-main: linear-gradient(135deg, #3D5A80 0%, #1A4B84 50%, #2c4460 100%);
+    --gradient-hero: linear-gradient(160deg, #3D5A80 0%, #1A4B84 40%, #15395f 100%);
+    --gradient-red: linear-gradient(135deg, #E63946, #c92d39);
+    --gradient-blue-btn: linear-gradient(135deg, #1A4B84, #2563a8);
 }
 
 * {
@@ -23,7 +36,7 @@ html, body {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--dark-blue);
+    background: var(--dark-blue-deep);
     color: var(--text-dark);
 }
 
@@ -45,9 +58,10 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 15px 5%;
-    background: var(--white);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
+    box-shadow: 0 1px 12px rgba(26, 75, 132, 0.1);
     width: 100%;
+    border-bottom: 1px solid rgba(26, 75, 132, 0.06);
 }
 
 .navbar-brand .logo {
@@ -120,7 +134,7 @@ body {
     position: absolute;
     top: -5px;
     right: -8px;
-    background: var(--accent-red);
+    background: var(--gradient-red);
     color: var(--white);
     font-size: 0.7rem;
     font-weight: bold;
@@ -136,7 +150,7 @@ body {
 /* Main Content */
 .main-content {
     flex: 1;
-    background: var(--dark-blue);
+    background: var(--gradient-main);
     width: 100%;
 }
 
@@ -146,6 +160,7 @@ body {
     padding: 60px 5%;
     color: var(--white);
     width: 100%;
+    background: var(--gradient-hero);
 }
 
 .hero h1 {
@@ -171,26 +186,37 @@ body {
 .search-form input {
     flex: 1;
     padding: 15px 20px;
-    border: none;
-    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
     font-size: 1rem;
     min-width: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(5px);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.search-form input:focus {
+    outline: none;
+    border-color: var(--accent-red);
+    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
 }
 
 .search-form button {
     padding: 15px 30px;
-    background: var(--primary-blue);
+    background: var(--gradient-red);
     color: var(--white);
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 1rem;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s;
     white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
 }
 
 .search-form button:hover {
-    background: #153d6e;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(230, 57, 70, 0.4);
 }
 
 .search-results-header {
@@ -207,19 +233,20 @@ body {
 }
 
 .btn-clear-search {
-    background: transparent;
-    border: 1px solid var(--white);
+    background: var(--glass-white);
+    border: 1px solid var(--glass-border);
     color: var(--white);
     padding: 8px 18px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.3s;
+    backdrop-filter: blur(5px);
 }
 
 .btn-clear-search:hover {
-    background: var(--white);
-    color: var(--dark-blue);
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.4);
 }
 
 .no-results {
@@ -256,12 +283,20 @@ body {
 
 .btn-create {
     padding: 10px 20px;
-    background: var(--accent-red);
+    background: var(--gradient-red);
     color: var(--white);
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 3px 10px rgba(230, 57, 70, 0.25);
+    transition: all 0.3s;
+}
+
+.btn-create:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(230, 57, 70, 0.35);
 }
 
 /* Musicians Grid */
@@ -274,25 +309,38 @@ body {
 
 /* Musician Card */
 .musician-card {
-    background: var(--white);
-    border-radius: 15px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
+    border-radius: 16px;
     overflow: hidden;
     text-align: center;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0,0,0,0.04);
 }
 
 .musician-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
 }
 
 .musician-image {
     height: 180px;
     overflow: hidden;
-    background: #ddd;
+    background: linear-gradient(135deg, #ddd, #c8c8c8);
+    position: relative;
+}
+
+.musician-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(transparent, rgba(0,0,0,0.15));
+    pointer-events: none;
 }
 
 .musician-image img {
@@ -318,8 +366,9 @@ body {
 }
 
 .musician-info .style {
-    color: var(--primary-blue);
+    color: var(--primary-blue-light);
     font-size: 0.85rem;
+    font-weight: 500;
     margin: 5px 0;
 }
 
@@ -337,22 +386,35 @@ body {
 
 .btn-contact,
 .btn-profile {
-    padding: 8px 15px;
-    border-radius: 5px;
+    padding: 8px 16px;
+    border-radius: 8px;
     font-size: 0.85rem;
+    font-weight: 500;
     cursor: pointer;
     text-decoration: none;
-    border: 1px solid var(--primary-blue);
+    border: none;
+    transition: all 0.3s ease;
 }
 
 .btn-contact {
-    background: var(--primary-blue);
+    background: var(--gradient-blue-btn);
     color: var(--white);
+    box-shadow: 0 2px 8px rgba(26, 75, 132, 0.25);
+}
+
+.btn-contact:hover {
+    box-shadow: 0 4px 12px rgba(26, 75, 132, 0.35);
+    transform: translateY(-1px);
 }
 
 .btn-profile {
-    background: transparent;
+    background: rgba(26, 75, 132, 0.08);
     color: var(--primary-blue);
+    border: 1px solid rgba(26, 75, 132, 0.2);
+}
+
+.btn-profile:hover {
+    background: rgba(26, 75, 132, 0.15);
 }
 
 /* Bands Grid */
@@ -365,24 +427,37 @@ body {
 
 /* Band Card */
 .band-card {
-    background: var(--white);
-    border-radius: 15px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
+    border-radius: 16px;
     overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0,0,0,0.04);
 }
 
 .band-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
 }
 
 .band-image {
     height: 160px;
     overflow: hidden;
-    background: #ddd;
+    background: linear-gradient(135deg, #ddd, #c8c8c8);
+    position: relative;
+}
+
+.band-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(transparent, rgba(0,0,0,0.15));
+    pointer-events: none;
 }
 
 .band-image img {
@@ -416,24 +491,27 @@ body {
     display: block;
     text-align: center;
     padding: 12px;
-    background: var(--primary-blue);
+    background: var(--gradient-blue-btn);
     color: var(--white);
     text-decoration: none;
     font-size: 0.9rem;
-    transition: background 0.3s;
+    font-weight: 500;
+    transition: all 0.3s;
+    letter-spacing: 0.3px;
 }
 
 .btn-view:hover {
-    background: #153d6e;
+    filter: brightness(1.1);
 }
 
 /* Footer */
 .footer {
-    background: var(--text-dark);
+    background: linear-gradient(180deg, #2d3436 0%, #1e2426 100%);
     color: var(--white);
     text-align: center;
     padding: 30px 5%;
     width: 100%;
+    border-top: 1px solid rgba(255,255,255,0.05);
 }
 
 .footer-links {
@@ -461,18 +539,19 @@ body {
     align-items: center;
     min-height: 100vh;
     width: 100%;
-    background: linear-gradient(135deg, var(--dark-blue), var(--primary-blue));
+    background: var(--gradient-hero);
     padding: 20px;
 }
 
 .login-box {
-    background: var(--white);
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
     padding: 50px;
     border-radius: 20px;
     text-align: center;
     width: 100%;
     max-width: 400px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.5);
 }
 
 .login-logo {
@@ -489,25 +568,37 @@ body {
     width: 100%;
     padding: 15px;
     margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    border: 2px solid #e8ecf0;
+    border-radius: 12px;
     font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background: #fafbfc;
+}
+
+.login-box input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(26, 75, 132, 0.1);
+    background: var(--white);
 }
 
 .login-box button {
     width: 100%;
     padding: 15px;
-    background: var(--accent-red);
+    background: var(--gradient-red);
     color: var(--white);
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
 }
 
 .login-box button:hover {
-    background: #d62839;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
 }
 
 .error {
@@ -536,7 +627,7 @@ body {
     width: 100%;
     color: var(--white);
     font-size: 1.2rem;
-    background: var(--dark-blue);
+    background: var(--gradient-hero);
 }
 
 /* ============================================
@@ -726,10 +817,11 @@ body {
 }
 
 .profil-container {
-    background: var(--white);
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
     border-radius: 20px;
     padding: 40px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(0,0,0,0.04);
 }
 
 .profil-header {
@@ -864,17 +956,20 @@ body {
 
 .btn-save {
     padding: 15px 40px;
-    background: var(--accent-red);
+    background: var(--gradient-red);
     color: var(--white);
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
 }
 
 .btn-save:hover {
-    background: #d62839;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
 }
 
 .btn-save:disabled {
@@ -927,10 +1022,11 @@ body {
 }
 
 .musician-detail-container {
-    background: var(--white);
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(0,0,0,0.04);
 }
 
 .musician-detail-header {
@@ -1219,10 +1315,11 @@ body {
 .chat-container {
     display: flex;
     height: 100%;
-    background: var(--white);
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(0,0,0,0.04);
 }
 
 .chat-sidebar {
@@ -1329,7 +1426,7 @@ body {
 }
 
 .message.sent {
-    background: var(--primary-blue);
+    background: var(--gradient-blue-btn);
     color: var(--white);
     margin-left: auto;
     border-bottom-right-radius: 5px;
@@ -1375,17 +1472,20 @@ body {
 
 .btn-send {
     padding: 15px 25px;
-    background: var(--accent-red);
+    background: var(--gradient-red);
     color: var(--white);
     border: none;
     border-radius: 25px;
     cursor: pointer;
     font-size: 1rem;
-    transition: background 0.3s;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 3px 10px rgba(230, 57, 70, 0.3);
 }
 
 .btn-send:hover {
-    background: #d62839;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(230, 57, 70, 0.4);
 }
 
 /* Responsive Chat */
@@ -1432,10 +1532,11 @@ body {
 }
 
 .groupe-detail-container {
-    background: var(--white);
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(0,0,0,0.04);
 }
 
 .groupe-detail-header {
