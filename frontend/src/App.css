@@ -266,9 +266,8 @@ body {
 
 /* Musicians Grid */
 .musicians-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 25px;
     width: 100%;
 }
@@ -279,15 +278,15 @@ body {
     border-radius: 15px;
     overflow: hidden;
     text-align: center;
-    transition: transform 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
     display: flex;
     flex-direction: column;
-    width: 220px;
-    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .musician-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
 .musician-image {
@@ -358,9 +357,8 @@ body {
 
 /* Bands Grid */
 .bands-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 25px;
     width: 100%;
 }
@@ -370,15 +368,15 @@ body {
     background: var(--white);
     border-radius: 15px;
     overflow: hidden;
-    transition: transform 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
     display: flex;
     flex-direction: column;
-    width: 280px;
-    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .band-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
 .band-image {
@@ -560,10 +558,12 @@ body {
     }
 
     .musicians-grid {
+        grid-template-columns: repeat(3, 1fr);
         gap: 20px;
     }
 
     .bands-grid {
+        grid-template-columns: repeat(2, 1fr);
         gap: 20px;
     }
 }
@@ -617,15 +617,8 @@ body {
     }
 
     .musicians-grid {
+        grid-template-columns: repeat(2, 1fr);
         gap: 15px;
-    }
-
-    .musician-card {
-        width: 160px;
-    }
-
-    .musician-image {
-        height: 150px;
     }
 
     .musician-info h3 {
@@ -644,13 +637,7 @@ body {
     }
 
     .bands-grid {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .band-card {
-        width: 100%;
-        max-width: 350px;
+        grid-template-columns: 1fr;
     }
 
     .login-box {
@@ -673,39 +660,8 @@ body {
     }
 
     .musicians-grid {
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
-    }
-
-    .musician-card {
-        width: 140px;
-    }
-
-    .musician-image {
-        height: 120px;
-    }
-
-    .musician-info {
-        padding: 10px;
-    }
-
-    .musician-info h3 {
-        font-size: 0.85rem;
-    }
-
-    .musician-info .instrument,
-    .musician-info .style,
-    .musician-info .city {
-        font-size: 0.75rem;
-    }
-
-    .musician-actions {
-        padding: 10px;
-    }
-
-    .btn-contact,
-    .btn-profile {
-        padding: 6px 10px;
-        font-size: 0.75rem;
     }
 
     .user-info span {
@@ -2137,4 +2093,218 @@ body {
 .form-group select:focus {
     outline: none;
     border-color: #e91e63;
+}
+
+/* ============================================
+   PAGE A PROPOS
+   ============================================ */
+
+.apropos-page {
+    color: var(--white);
+}
+
+.apropos-section {
+    padding: 50px 5%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.apropos-section h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: var(--white);
+}
+
+.apropos-intro {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--beige);
+    margin-bottom: 15px;
+}
+
+.apropos-text {
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.8;
+    opacity: 0.9;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Steps */
+.apropos-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.step-card {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    color: var(--text-dark);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+}
+
+.step-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-blue);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin: 0 auto 15px;
+}
+
+.step-card h3 {
+    margin-bottom: 10px;
+    color: var(--primary-blue);
+}
+
+.step-card p {
+    font-size: 0.95rem;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* Values */
+.apropos-values {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.value-card {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 15px;
+    padding: 30px 20px;
+    text-align: center;
+    transition: background 0.3s;
+}
+
+.value-card:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.value-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.value-card h3 {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.value-card p {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    line-height: 1.6;
+}
+
+/* Tags */
+.apropos-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.apropos-tags .tag {
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+}
+
+.apropos-tags .tag-style {
+    background: var(--accent-red);
+}
+
+/* CTA */
+.apropos-cta {
+    text-align: center;
+    padding: 60px 5%;
+    background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+    margin-top: 30px;
+}
+
+.apropos-cta h2 {
+    color: var(--white);
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.cta-btn {
+    padding: 15px 35px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.cta-primary {
+    background: var(--accent-red);
+    color: var(--white);
+}
+
+.cta-primary:hover {
+    background: #d62839;
+}
+
+.cta-secondary {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid var(--white);
+}
+
+.cta-secondary:hover {
+    background: var(--white);
+    color: var(--primary-blue);
+}
+
+/* Responsive A Propos */
+@media (max-width: 1024px) {
+    .apropos-values {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .apropos-steps {
+        grid-template-columns: 1fr;
+    }
+
+    .apropos-values {
+        grid-template-columns: 1fr;
+    }
+
+    .apropos-section h2 {
+        font-size: 1.5rem;
+    }
 }

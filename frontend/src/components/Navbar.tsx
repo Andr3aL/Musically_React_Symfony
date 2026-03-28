@@ -55,7 +55,7 @@ function Navbar({ user, onLogout }: NavbarProps) {
                 <Link to="/" className={isActive('/')}>Accueil</Link>
                 <Link to="/musiciens" className={isActive('/musiciens')}>Musiciens</Link>
                 <Link to="/groupes" className={isActive('/groupes')}>Groupes</Link>
-                <Link to="/apropos" className={isActive('/apropos')}>A propos</Link>
+                <Link to="/a-propos" className={isActive('/a-propos')}>A propos</Link>
                 {user?.roles?.includes('ROLE_ADMIN') && (
                     <a href="http://localhost:8000/admin" target="_blank" rel="noreferrer">Backoffice</a>
                 )}

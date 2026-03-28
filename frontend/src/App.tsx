@@ -15,6 +15,7 @@ import MusicienDetail from './pages/MusicienDetail';
 import GroupeDetail from './pages/GroupeDetail';
 import Chat from './pages/Chat';
 import Invitations from './pages/Invitations';
+import APropos from './pages/APropos';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(authService.isAuthenticated());
@@ -97,6 +98,7 @@ function App() {
                         <Route path="/musicien/:id" element={<MusicienDetail currentUser={currentUser} />} />
                         <Route path="/chat/:userId" element={<Chat currentUser={currentUser} />} />
                         <Route path="/invitations" element={<Invitations />} />
+                        <Route path="/a-propos" element={<APropos />} />
                         <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
                 </main>
