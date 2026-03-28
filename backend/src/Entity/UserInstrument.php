@@ -69,6 +69,12 @@ class UserInstrument
         return $this->isMain;
     }
 
+    #[Groups(['user:read'])]
+    public function getIsMain(): ?bool
+    {
+        return $this->isMain;
+    }
+
     public function setIsMain(bool $isMain): static
     {
         $this->isMain = $isMain;
@@ -86,5 +92,13 @@ class UserInstrument
         $this->niveau = $niveau;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        $str = $this->instrument ? $this->instrument->getNomInstrument() : 'Instrument';
+        if ($this->niveau) $str .= ' (' . $this->niveau->value . ')';
+        if ($this->isMain) $str .= ' - Principal';
+        return $str;
     }
 }

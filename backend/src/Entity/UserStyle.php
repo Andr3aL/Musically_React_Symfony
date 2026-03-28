@@ -64,10 +64,23 @@ class UserStyle
         return $this->isPrincipal;
     }
 
+    #[Groups(['user:read'])]
+    public function getIsPrincipal(): ?bool
+    {
+        return $this->isPrincipal;
+    }
+
     public function setIsPrincipal(bool $isPrincipal): static
     {
         $this->isPrincipal = $isPrincipal;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        $str = $this->style ? $this->style->getNomStyle() : 'Style';
+        if ($this->isPrincipal) $str .= ' (principal)';
+        return $str;
     }
 }

@@ -89,7 +89,7 @@ export const usersService = {
 export const bandsService = {
     getAll: (): Promise<AxiosResponse<HydraCollection<Band>>> => api.get('/bands'),
     getOne: (id: number): Promise<AxiosResponse<Band>> => api.get(`/bands/${id}`),
-    getPendingSetup: () => api.get('/bands/pending-setup'),
+    getPendingSetup: () => api.get('/profile/bands-pending-setup'),
     setupBand: (bandId: number, data: { nameBand: string; description?: string; styleId?: number | null }) => 
         api.post(`/bands/${bandId}/setup`, data),
     uploadImage: (bandId: number, imageFile: File) => {
@@ -99,6 +99,14 @@ export const bandsService = {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
     },
+};
+
+export const profileService = {
+    getPreferences: () => api.get('/profile/preferences'),
+    savePreferences: (data: {
+        styles: { styleId: number; isPrincipal: boolean }[];
+        instruments: { instrumentId: number; isMain: boolean; niveau: string }[];
+    }) => api.post('/profile/preferences', data),
 };
 
 export const invitationsService = {

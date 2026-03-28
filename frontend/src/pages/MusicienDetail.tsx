@@ -31,9 +31,7 @@ function MusicienDetail({ currentUser }: MusicienDetailProps) {
 
     const loadMusician = async (musicianId: number) => {
         try {
-            console.log('Loading musician ID:', musicianId);
             const response = await usersService.getOne(musicianId);
-            console.log('Response:', response.data);
             setMusician(response.data);
         } catch (err) {
             console.error('Erreur chargement musicien:', err);
@@ -165,12 +163,12 @@ function MusicienDetail({ currentUser }: MusicienDetailProps) {
                                 {musician.userStyles.map((us) => (
                                     <span key={us.id} className={`tag ${us.isPrincipal ? 'principal' : ''}`}>
                                         {us.style.nom_style}
-                                        {us.isPrincipal && ' ⭐'}
+                                        {us.isPrincipal && <span className="badge-principal">Principal</span>}
                                     </span>
                                 ))}
                             </div>
                         ) : (
-                            <p className="no-data">Aucun style renseigné</p>
+                            <p className="no-data">Aucun style renseigne</p>
                         )}
                     </section>
 
@@ -179,11 +177,11 @@ function MusicienDetail({ currentUser }: MusicienDetailProps) {
                         {musician.userInstruments && musician.userInstruments.length > 0 ? (
                             <div className="instruments-list">
                                 {musician.userInstruments.map((ui) => (
-                                    <div key={ui.id} className="instrument-item">
-                                        <span className="instrument-name">
-                                            {ui.instrument.nom_instrument}
-                                            {ui.isMain && ' ⭐'}
-                                        </span>
+                                    <div key={ui.id} className={`instrument-item ${ui.isMain ? 'instrument-main' : ''}`}>
+                                        <div className="instrument-name-wrap">
+                                            <span className="instrument-name">{ui.instrument.nom_instrument}</span>
+                                            {ui.isMain && <span className="badge-principal">Principal</span>}
+                                        </div>
                                         <span className={`niveau niveau-${ui.niveau.toLowerCase()}`}>
                                             {ui.niveau}
                                         </span>
@@ -191,7 +189,7 @@ function MusicienDetail({ currentUser }: MusicienDetailProps) {
                                 ))}
                             </div>
                         ) : (
-                            <p className="no-data">Aucun instrument renseigné</p>
+                            <p className="no-data">Aucun instrument renseigne</p>
                         )}
                     </section>
                 </div>

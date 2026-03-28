@@ -72,7 +72,7 @@ class GroupInvitationController extends AbstractController
     /**
      * Get bands needing setup where current user is admin
      */
-    #[Route('/api/bands/pending-setup', name: 'api_bands_pending_setup', methods: ['GET'])]
+    #[Route('/api/profile/bands-pending-setup', name: 'api_bands_pending_setup', methods: ['GET'])]
     public function getBandsPendingSetup(
         #[CurrentUser] User $currentUser,
         EntityManagerInterface $entityManager
