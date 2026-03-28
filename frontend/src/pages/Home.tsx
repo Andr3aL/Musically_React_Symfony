@@ -13,6 +13,8 @@ function Home({ currentUser }: HomeProps) {
     const [nearbyMusicians, setNearbyMusicians] = useState<User[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
+    const [searchResults, setSearchResults] = useState<User[] | null>(null);
+    const [searching, setSearching] = useState<boolean>(false);
 
     useEffect(() => {
         loadMusicians();
@@ -36,10 +38,27 @@ function Home({ currentUser }: HomeProps) {
         }
     };
 
-    const handleSearch = (e: FormEvent<HTMLFormElement>): void => {
+    const handleSearch = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
-        // Implémenter la recherche
-        console.log('Recherche:', searchQuery);
+        const query = searchQuery.trim();
+        if (!query) {
+            setSearchResults(null);
+            return;
+        }
+        setSearching(true);
+        try {
+            const response = await usersService.search(query);
+            setSearchResults(response.data);
+        } catch (error) {
+            console.error('Erreur recherche:', error);
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const clearSearch = (): void => {
+        setSearchQuery('');
+        setSearchResults(null);
     };
 
     const handleContact = (user: User): void => {
@@ -64,37 +83,63 @@ function Home({ currentUser }: HomeProps) {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <button type="submit">Rechercher</button>
+                    <button type="submit" disabled={searching}>
+                        {searching ? 'Recherche...' : 'Rechercher'}
+                    </button>
                 </form>
             </section>
 
-            {nearbyMusicians.length > 0 && (
+            {searchResults !== null ? (
                 <section className="section">
-                    <h2>Musiciens près de chez vous ({currentUser?.city})</h2>
-                    <div className="musicians-grid">
-                        {nearbyMusicians.map(musician => (
-                            <MusicianCard 
-                                key={musician.id} 
-                                user={musician} 
-                                onContact={handleContact}
-                            />
-                        ))}
+                    <div className="search-results-header">
+                        <h2>Résultats pour "{searchQuery}" ({searchResults.length})</h2>
+                        <button onClick={clearSearch} className="btn-clear-search">Effacer la recherche</button>
                     </div>
+                    {searchResults.length > 0 ? (
+                        <div className="musicians-grid">
+                            {searchResults.map(musician => (
+                                <MusicianCard
+                                    key={musician.id}
+                                    user={musician}
+                                    onContact={handleContact}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="no-results">Aucun musicien trouvé pour cette recherche.</p>
+                    )}
                 </section>
-            )}
+            ) : (
+                <>
+                    {nearbyMusicians.length > 0 && (
+                        <section className="section">
+                            <h2>Musiciens près de chez vous ({currentUser?.city})</h2>
+                            <div className="musicians-grid">
+                                {nearbyMusicians.map(musician => (
+                                    <MusicianCard
+                                        key={musician.id}
+                                        user={musician}
+                                        onContact={handleContact}
+                                    />
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
-            <section className="section">
-                <h2>Autres musiciens</h2>
-                <div className="musicians-grid">
-                    {musicians.map(musician => (
-                        <MusicianCard 
-                            key={musician.id} 
-                            user={musician} 
-                            onContact={handleContact}
-                        />
-                    ))}
-                </div>
-            </section>
+                    <section className="section">
+                        <h2>Autres musiciens</h2>
+                        <div className="musicians-grid">
+                            {musicians.map(musician => (
+                                <MusicianCard
+                                    key={musician.id}
+                                    user={musician}
+                                    onContact={handleContact}
+                                />
+                            ))}
+                        </div>
+                    </section>
+                </>
+            )}
         </div>
     );
 }

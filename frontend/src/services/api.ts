@@ -68,6 +68,7 @@ export const usersService = {
     getAll: (): Promise<AxiosResponse<HydraCollection<User>>> => api.get('/users'),
     getOne: (id: number): Promise<AxiosResponse<User>> => api.get(`/users/${id}`),
     getByEmail: (email: string): Promise<AxiosResponse<HydraCollection<User>>> => api.get(`/users?email=${email}`),
+    search: (query: string): Promise<AxiosResponse<User[]>> => api.get(`/search/users?q=${encodeURIComponent(query)}`),
     update: (id: number, data: Partial<User>): Promise<AxiosResponse<User>> => api.patch(`/users/${id}`, data, {
         headers: {
             'Content-Type': 'application/merge-patch+json',

@@ -33,28 +33,27 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Search users by keyword across name, city, instrument, and style.
+     *
+     * @return User[]
+     */
+    public function search(string $query): array
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.userInstruments', 'ui')
+            ->leftJoin('ui.instrument', 'i')
+            ->leftJoin('u.userStyles', 'us')
+            ->leftJoin('us.style', 's')
+            ->where('LOWER(u.firstName) LIKE :q')
+            ->orWhere('LOWER(u.lastName) LIKE :q')
+            ->orWhere('LOWER(u.city) LIKE :q')
+            ->orWhere('LOWER(i.nom_instrument) LIKE :q')
+            ->orWhere('LOWER(s.nom_style) LIKE :q')
+            ->setParameter('q', '%' . mb_strtolower($query) . '%')
+            ->groupBy('u.id')
+            ->orderBy('u.lastName', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

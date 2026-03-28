@@ -8,6 +8,7 @@ use App\Entity\GroupInvitation;
 use App\Entity\Style;
 use App\Entity\User;
 use App\Repository\GroupInvitationRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,6 +19,56 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class GroupInvitationController extends AbstractController
 {
+    /**
+     * Search users by keyword (name, city, instrument, style)
+     */
+    #[Route('/api/search/users', name: 'api_users_search', methods: ['GET'])]
+    public function searchUsers(
+        Request $request,
+        UserRepository $userRepository
+    ): JsonResponse {
+        $query = trim($request->query->get('q', ''));
+
+        if ($query === '') {
+            return new JsonResponse([]);
+        }
+
+        $users = $userRepository->search($query);
+
+        $data = array_map(function (User $user) {
+            // Main instrument
+            $mainInstrument = null;
+            foreach ($user->getUserInstruments() as $ui) {
+                if ($ui->isMain()) {
+                    $mainInstrument = $ui->getInstrument()->getNomInstrument();
+                    break;
+                }
+            }
+
+            // Main style
+            $mainStyle = null;
+            foreach ($user->getUserStyles() as $us) {
+                if ($us->isPrincipal()) {
+                    $mainStyle = $us->getStyle()->getNomStyle();
+                    break;
+                }
+            }
+
+            return [
+                'id' => $user->getId(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'image' => $user->getImage(),
+                'city' => $user->getCity(),
+                'country' => $user->getCountry(),
+                'mainInstrument' => $mainInstrument,
+                'mainStyle' => $mainStyle,
+            ];
+        }, $users);
+
+        return new JsonResponse($data);
+    }
+
     /**
      * Get bands needing setup where current user is admin
      */
