@@ -4,11 +4,24 @@ import type { User } from '../types';
 interface MusicianCardProps {
     user: User;
     onContact: (user: User) => void;
+    nearby?: boolean;
 }
 
-function MusicianCard({ user, onContact }: MusicianCardProps) {
+function MusicianCard({ user, onContact, nearby }: MusicianCardProps) {
+    // Extract main instrument from userInstruments or fallback to mainInstrument
+    const mainInstrument = user.mainInstrument
+        || user.userInstruments?.find(ui => ui.isMain)?.instrument?.nom_instrument
+        || user.userInstruments?.[0]?.instrument?.nom_instrument
+        || 'Musicien';
+
+    // Extract main style from userStyles or fallback to mainStyle
+    const mainStyle = user.mainStyle
+        || user.userStyles?.find(us => us.isPrincipal)?.style?.nom_style
+        || user.userStyles?.[0]?.style?.nom_style
+        || 'Divers';
+
     return (
-        <div className="musician-card">
+        <div className={`musician-card ${nearby ? 'musician-card-nearby' : ''}`}>
             <div className="musician-image">
                 {user.image ? (
                     <img src={`http://localhost:8000/uploads/users/${user.image}`} alt={`${user.firstName} ${user.lastName}`} />
@@ -20,8 +33,8 @@ function MusicianCard({ user, onContact }: MusicianCardProps) {
             </div>
             <div className="musician-info">
                 <h3>{user.lastName} {user.firstName}</h3>
-                <p className="instrument">{user.mainInstrument || 'Musicien'}</p>
-                <p className="style">{user.mainStyle || 'Divers'}</p>
+                <p className="instrument">{mainInstrument}</p>
+                <p className="style">{mainStyle}</p>
                 <p className="city">{user.city}</p>
             </div>
             <div className="musician-actions">

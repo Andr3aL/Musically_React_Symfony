@@ -107,6 +107,13 @@ export const profileService = {
         styles: { styleId: number; isPrincipal: boolean }[];
         instruments: { instrumentId: number; isMain: boolean; niveau: string }[];
     }) => api.post('/profile/preferences', data),
+    uploadPhoto: (file: File) => {
+        const formData = new FormData();
+        formData.append('photo', file);
+        return api.post('/profile/upload-photo', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
 };
 
 export const invitationsService = {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usersService, stylesService, instrumentsService, profileService } from '../services/api';
 import type { User, Style, Instrument } from '../types';
 
@@ -36,6 +36,9 @@ function Profil({ currentUser, onUserUpdate }: ProfilProps) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (currentUser) {
@@ -64,6 +67,45 @@ function Profil({ currentUser, onUserUpdate }: ProfilProps) {
             setSelectedInstruments(prefsRes.data.instruments || []);
         } catch (err) {
             console.error('Erreur chargement:', err);
+        }
+    };
+
+    const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Client-side validation
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            setError('Format non autorise. Utilisez JPEG, PNG, WebP ou GIF.');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            setError('Fichier trop volumineux (max 5 Mo).');
+            return;
+        }
+
+        // Preview
+        const reader = new FileReader();
+        reader.onloadend = () => setAvatarPreview(reader.result as string);
+        reader.readAsDataURL(file);
+
+        // Upload
+        setUploading(true);
+        setError('');
+        setSuccess('');
+        try {
+            const response = await profileService.uploadPhoto(file);
+            const user = await usersService.getCurrentUser();
+            if (user) onUserUpdate(user);
+            setSuccess('Photo mise a jour !');
+            setAvatarPreview(null);
+        } catch (err: any) {
+            setError(err.response?.data?.error || 'Erreur lors de l\'upload');
+            setAvatarPreview(null);
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -172,7 +214,9 @@ function Profil({ currentUser, onUserUpdate }: ProfilProps) {
             <div className="profil-container">
                 <div className="profil-header">
                     <div className="profil-avatar">
-                        {currentUser?.image ? (
+                        {avatarPreview ? (
+                            <img src={avatarPreview} alt="Preview" />
+                        ) : currentUser?.image ? (
                             <img
                                 src={`http://localhost:8000/uploads/users/${currentUser.image}`}
                                 alt={currentUser.firstName}
@@ -182,7 +226,22 @@ function Profil({ currentUser, onUserUpdate }: ProfilProps) {
                                 {currentUser?.firstName?.charAt(0)}{currentUser?.lastName?.charAt(0)}
                             </div>
                         )}
-                        <button className="btn-change-photo">Changer la photo</button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handlePhotoSelect}
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            style={{ display: 'none' }}
+                        />
+                        <button
+                            type="button"
+                            className="btn-change-photo"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                        >
+                            {uploading ? 'Envoi en cours...' : 'Changer la photo'}
+                        </button>
+                        <span className="photo-hint">JPEG, PNG, WebP ou GIF - 5 Mo max</span>
                     </div>
                     <div className="profil-title">
                         <h1>Mon Profil</h1>
