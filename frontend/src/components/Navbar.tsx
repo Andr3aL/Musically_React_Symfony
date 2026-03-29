@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../assets/logo.png';
+import logoText from '../assets/logo-text.png';
 import { invitationsService, bandsService } from '../services/api';
 import type { User } from '../types';
 
@@ -46,8 +47,9 @@ function Navbar({ user, onLogout }: NavbarProps) {
     return (
         <nav className="navbar">
             <div className="navbar-brand">
-                <Link to="/">
+                <Link to="/" className="brand-link">
                     <img src={logo} alt="Music'Ally" className="logo" />
+                    <img src={logoText} alt="MUSIC'ALLY" className="logo-text" />
                 </Link>
             </div>
 

@@ -73,6 +73,12 @@ class BandMember
         return $this->isAdmin;
     }
 
+    #[Groups(['band:read'])]
+    public function getIsAdmin(): ?bool
+    {
+        return $this->isAdmin;
+    }
+
     public function setIsAdmin(bool $isAdmin): static
     {
         $this->isAdmin = $isAdmin;

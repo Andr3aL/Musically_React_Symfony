@@ -53,19 +53,9 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
         }
     };
 
-    // Check if current user is admin of this band
     const isCurrentUserAdmin = (): boolean => {
-        if (!currentUser || !band?.members) {
-            console.log('Admin check failed - no user or members:', { currentUser, members: band?.members });
-            return false;
-        }
-        const result = band.members.some(m => {
-            const match = m.user.id == currentUser.id && m.isAdmin;
-            console.log('Checking member:', { memberId: m.user.id, currentUserId: currentUser.id, isAdmin: m.isAdmin, match });
-            return match;
-        });
-        console.log('isCurrentUserAdmin result:', result);
-        return result;
+        if (!currentUser || !band?.members) return false;
+        return band.members.some(m => m.user.id == currentUser.id && m.isAdmin);
     };
 
     const openEditModal = () => {
@@ -135,10 +125,6 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
         );
     }
 
-    const imageUrl = band.photoBand
-        ? `http://localhost:8000/uploads/bands/${band.photoBand}`
-        : '/default-band.png';
-
     const formatDate = (dateString: string): string => {
         const date = new Date(dateString);
         return date.toLocaleDateString('fr-FR', {
@@ -156,7 +142,13 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
             <div className="groupe-detail-container">
                 <div className="groupe-detail-header">
                     <div className="groupe-detail-avatar">
-                        <img src={imageUrl} alt={band.nameBand} />
+                        {band.photoBand ? (
+                            <img src={`http://localhost:8000/uploads/bands/${band.photoBand}`} alt={band.nameBand} />
+                        ) : (
+                            <div className="placeholder-band-detail">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="64" height="64"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                            </div>
+                        )}
                     </div>
                     <div className="groupe-detail-info">
                         <h1>{band.nameBand}</h1>
@@ -170,16 +162,10 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
                         {band.description && (
                             <p className="groupe-description">{band.description}</p>
                         )}
-                        {/* Debug info */}
-                        <p style={{fontSize: '10px', color: 'yellow'}}>
-                            User: {currentUser?.id} | Admin check: {isCurrentUserAdmin() ? 'YES' : 'NO'}
-                        </p>
-                        {/* Show button for all members for now, will restrict to admin later */}
-                        <button className="btn-edit-band" onClick={openEditModal}>
-                            ✏️ Modifier le groupe
-                        </button>
-                        {band.needsSetup && (
-                            <p className="setup-warning">⚠️ Ce groupe nécessite une configuration</p>
+                        {isCurrentUserAdmin() && (
+                            <button className="btn-edit-band" onClick={openEditModal}>
+                                Modifier le groupe
+                            </button>
                         )}
                     </div>
                 </div>
@@ -192,10 +178,14 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
                                 {admins.map(member => {
                                     const memberImage = member.user.image
                                         ? `http://localhost:8000/uploads/users/${member.user.image}`
-                                        : '/default-avatar.png';
+                                        : null;
                                     return (
                                         <div key={member.id} className="member-card admin">
-                                            <img src={memberImage} alt={`${member.user.firstName} ${member.user.lastName}`} />
+                                            {memberImage ? (
+                                                <img src={memberImage} alt={`${member.user.firstName} ${member.user.lastName}`} />
+                                            ) : (
+                                                <div className="placeholder-member"><svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg></div>
+                                            )}
                                             <div className="member-info">
                                                 <h4>{member.user.firstName} {member.user.lastName}</h4>
                                                 {member.user.city && (
@@ -207,8 +197,14 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
                                                 <p className="member-joined">Membre depuis le {formatDate(member.joinedAt)}</p>
                                             </div>
                                             <div className="member-actions">
-                                                <Link to={`/musicien/${member.user.id}`} className="btn-view-profile">Voir profil</Link>
-                                                <Link to={`/chat/${member.user.id}`} className="btn-contact-member">💬</Link>
+                                                {member.user.id == currentUser?.id ? (
+                                                    <Link to="/profil" className="btn-view-profile">Voir mon profil</Link>
+                                                ) : (
+                                                    <>
+                                                        <Link to={`/musicien/${member.user.id}`} className="btn-view-profile">Voir profil</Link>
+                                                        <Link to={`/chat/${member.user.id}`} className="btn-contact-member">💬</Link>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     );
@@ -224,10 +220,14 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
                                 {regularMembers.map(member => {
                                     const memberImage = member.user.image
                                         ? `http://localhost:8000/uploads/users/${member.user.image}`
-                                        : '/default-avatar.png';
+                                        : null;
                                     return (
                                         <div key={member.id} className="member-card">
-                                            <img src={memberImage} alt={`${member.user.firstName} ${member.user.lastName}`} />
+                                            {memberImage ? (
+                                                <img src={memberImage} alt={`${member.user.firstName} ${member.user.lastName}`} />
+                                            ) : (
+                                                <div className="placeholder-member"><svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg></div>
+                                            )}
                                             <div className="member-info">
                                                 <h4>{member.user.firstName} {member.user.lastName}</h4>
                                                 {member.user.city && (
@@ -239,8 +239,14 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
                                                 <p className="member-joined">Membre depuis le {formatDate(member.joinedAt)}</p>
                                             </div>
                                             <div className="member-actions">
-                                                <Link to={`/musicien/${member.user.id}`} className="btn-view-profile">Voir profil</Link>
-                                                <Link to={`/chat/${member.user.id}`} className="btn-contact-member">💬</Link>
+                                                {member.user.id == currentUser?.id ? (
+                                                    <Link to="/profil" className="btn-view-profile">Voir mon profil</Link>
+                                                ) : (
+                                                    <>
+                                                        <Link to={`/musicien/${member.user.id}`} className="btn-view-profile">Voir profil</Link>
+                                                        <Link to={`/chat/${member.user.id}`} className="btn-contact-member">💬</Link>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     );

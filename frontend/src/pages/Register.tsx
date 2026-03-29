@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { authService } from '../services/api';
 import logo from '../assets/logo.png';
+import logoText from '../assets/logo-text.png';
 
 interface RegisterProps {
     onRegisterSuccess: () => void;

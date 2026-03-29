@@ -38,6 +38,7 @@ function Invitations() {
     // Band setup state
     const [setupBandId, setSetupBandId] = useState<number | null>(null);
     const [bandName, setBandName] = useState('');
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
@@ -64,18 +65,25 @@ function Invitations() {
         setLoading(false);
     };
 
+    const showToast = (message: string, type: 'success' | 'error') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
+
     const handleRespond = async (invitationId: number, accept: boolean) => {
         setResponding(invitationId);
         try {
             await invitationsService.respond(invitationId, accept);
             setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
-            
+
             if (accept) {
-                alert('Invitation acceptée ! Le groupe a été créé. L\'admin du groupe peut maintenant le configurer.');
+                showToast('Invitation acceptee ! Le groupe a ete cree avec succes.', 'success');
+            } else {
+                showToast('Invitation refusee.', 'success');
             }
         } catch (err: any) {
-            console.error('Erreur réponse invitation:', err);
-            alert(err.response?.data?.error || 'Erreur lors de la réponse');
+            console.error('Erreur reponse invitation:', err);
+            showToast(err.response?.data?.error || 'Erreur lors de la reponse', 'error');
         } finally {
             setResponding(null);
         }
@@ -95,7 +103,7 @@ function Invitations() {
             navigate(`/groupe/${setupBandId}`);
         } catch (err: any) {
             console.error('Erreur configuration groupe:', err);
-            alert(err.response?.data?.error || 'Erreur lors de la configuration');
+            showToast(err.response?.data?.error || 'Erreur lors de la configuration', 'error');
         } finally {
             setSubmitting(false);
         }
@@ -268,6 +276,13 @@ function Invitations() {
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+
+            {toast && (
+                <div className={`toast toast-${toast.type}`} onClick={() => setToast(null)}>
+                    <span className="toast-icon">{toast.type === 'success' ? '✅' : '❌'}</span>
+                    <span className="toast-message">{toast.message}</span>
                 </div>
             )}
         </div>

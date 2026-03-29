@@ -8,7 +8,7 @@ function Footer() {
                 <Link to="/">Accueil</Link>
                 <Link to="/musiciens">Musiciens</Link>
                 <Link to="/groupes">Groupes</Link>
-                <Link to="/apropos">A propos</Link>
+                <Link to="/a-propos">A propos</Link>
             </div>
         </footer>
     );
