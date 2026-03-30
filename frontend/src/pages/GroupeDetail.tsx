@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { bandsService, stylesService } from '../services/api';
+import { bandsService, stylesService, usersService, invitationsService } from '../services/api';
 import type { Band, User, Style } from '../types';
 
 interface GroupeDetailProps {
@@ -22,6 +22,14 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [styles, setStyles] = useState<Style[]>([]);
+
+    // Invite modal state
+    const [showInviteModal, setShowInviteModal] = useState(false);
+    const [inviteSearch, setInviteSearch] = useState('');
+    const [inviteResults, setInviteResults] = useState<User[]>([]);
+    const [inviteSearching, setInviteSearching] = useState(false);
+    const [invitingId, setInvitingId] = useState<number | null>(null);
+    const [inviteToast, setInviteToast] = useState<string | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -56,6 +64,35 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
     const isCurrentUserAdmin = (): boolean => {
         if (!currentUser || !band?.members) return false;
         return band.members.some(m => m.user.id == currentUser.id && m.isAdmin);
+    };
+
+    const handleInviteSearch = async (query: string) => {
+        setInviteSearch(query);
+        if (query.trim().length < 2) { setInviteResults([]); return; }
+        setInviteSearching(true);
+        try {
+            const response = await usersService.search(query.trim());
+            const memberIds = band?.members?.map(m => m.user.id) || [];
+            setInviteResults(response.data.filter(
+                (u: User) => !memberIds.includes(u.id) && u.id !== currentUser?.id
+            ));
+        } catch (err) { console.error(err); }
+        finally { setInviteSearching(false); }
+    };
+
+    const handleInviteToBand = async (userId: number) => {
+        if (!band) return;
+        setInvitingId(userId);
+        try {
+            await invitationsService.sendBandInvitation(band.id, userId);
+            const user = inviteResults.find(u => u.id === userId);
+            setInviteToast(`Invitation envoyee a ${user?.firstName} ${user?.lastName} !`);
+            setInviteResults(prev => prev.filter(u => u.id !== userId));
+            setTimeout(() => setInviteToast(null), 3000);
+        } catch (err: any) {
+            setInviteToast(err.response?.data?.error || 'Erreur');
+            setTimeout(() => setInviteToast(null), 3000);
+        } finally { setInvitingId(null); }
     };
 
     const openEditModal = () => {
@@ -163,9 +200,19 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
                             <p className="groupe-description">{band.description}</p>
                         )}
                         {isCurrentUserAdmin() && (
-                            <button className="btn-edit-band" onClick={openEditModal}>
-                                Modifier le groupe
-                            </button>
+                            <div className="admin-actions">
+                                <button className="btn-edit-band" onClick={openEditModal}>
+                                    Modifier le groupe
+                                </button>
+                                <button className="btn-edit-band" onClick={() => {
+                                    setShowInviteModal(true);
+                                    setInviteSearch('');
+                                    setInviteResults([]);
+                                    setInviteToast(null);
+                                }}>
+                                    Inviter un musicien
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -340,6 +387,62 @@ function GroupeDetail({ currentUser }: GroupeDetailProps) {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Invite Modal */}
+            {showInviteModal && band && (
+                <div className="modal-overlay" onClick={() => setShowInviteModal(false)}>
+                    <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
+                        <h2>Inviter un musicien dans {band.nameBand}</h2>
+
+                        {inviteToast && <div className="success-message">{inviteToast}</div>}
+
+                        <div className="form-group">
+                            <input
+                                type="text"
+                                placeholder="Rechercher par nom, ville, instrument..."
+                                value={inviteSearch}
+                                onChange={e => handleInviteSearch(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+
+                        {inviteSearching && <p style={{textAlign:'center',color:'#999'}}>Recherche...</p>}
+
+                        <div className="invite-results-list">
+                            {inviteResults.map(user => (
+                                <div key={user.id} className="invite-result-item">
+                                    {user.image ? (
+                                        <img src={`http://localhost:8000/uploads/users/${user.image}`} alt="" className="invite-result-avatar" />
+                                    ) : (
+                                        <div className="invite-result-avatar placeholder-member">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                                        </div>
+                                    )}
+                                    <div className="invite-result-info">
+                                        <strong>{user.firstName} {user.lastName}</strong>
+                                        <span>{user.city || ''}</span>
+                                    </div>
+                                    <button
+                                        className="btn-submit"
+                                        onClick={() => handleInviteToBand(user.id)}
+                                        disabled={invitingId === user.id}
+                                        style={{padding: '8px 18px', fontSize: '0.82rem'}}
+                                    >
+                                        {invitingId === user.id ? 'Envoi...' : 'Inviter'}
+                                    </button>
+                                </div>
+                            ))}
+                            {inviteSearch.length >= 2 && !inviteSearching && inviteResults.length === 0 && (
+                                <p style={{textAlign:'center',color:'#999',padding:'20px 0'}}>Aucun musicien trouve</p>
+                            )}
+                        </div>
+
+                        <div className="modal-actions">
+                            <button className="btn-cancel" onClick={() => setShowInviteModal(false)}>Fermer</button>
+                        </div>
                     </div>
                 </div>
             )}

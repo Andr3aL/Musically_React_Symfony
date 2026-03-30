@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Band;
 use App\Entity\GroupInvitation;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -65,5 +66,22 @@ class GroupInvitationRepository extends ServiceEntityRepository
         ->setParameter('user2', $user2);
 
         return (int) $query->getSingleScalarResult() > 0;
+    }
+
+    /**
+     * Find pending invitation for a specific band and receiver
+     */
+    public function findPendingForBandAndReceiver(Band $band, User $receiver): ?GroupInvitation
+    {
+        return $this->createQueryBuilder('i')
+            ->where('i.createdBand = :band')
+            ->andWhere('i.receiver = :receiver')
+            ->andWhere('i.status = :status')
+            ->setParameter('band', $band)
+            ->setParameter('receiver', $receiver)
+            ->setParameter('status', GroupInvitation::STATUS_PENDING)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

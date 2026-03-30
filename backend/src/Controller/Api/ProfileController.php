@@ -13,6 +13,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\Band;
+use App\Entity\BandMember;
+use App\Repository\BandRepository;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
@@ -113,6 +116,73 @@ class ProfileController extends AbstractController
             'image' => $newFilename,
             'message' => 'Photo mise a jour avec succes',
         ]);
+    }
+
+    #[Route('/api/search/bands', name: 'api_bands_search', methods: ['GET'])]
+    public function searchBands(
+        Request $request,
+        BandRepository $bandRepository,
+    ): JsonResponse {
+        $query = trim($request->query->get('q', ''));
+        if ($query === '') {
+            return new JsonResponse([]);
+        }
+
+        $bands = $bandRepository->search($query);
+
+        $data = array_map(function (Band $band) {
+            $membersCount = count($band->getMembers());
+            return [
+                'id' => $band->getId(),
+                'nameBand' => $band->getNameBand(),
+                'dateCreation' => $band->getDateCreation()->format('c'),
+                'photoBand' => $band->getPhotoBand(),
+                'membersCount' => $membersCount,
+            ];
+        }, $bands);
+
+        return new JsonResponse($data);
+    }
+
+    #[Route('/api/bands/create', name: 'api_bands_create', methods: ['POST'])]
+    public function createBand(
+        Request $request,
+        #[CurrentUser] User $currentUser,
+        EntityManagerInterface $em,
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true);
+
+        $name = trim($data['nameBand'] ?? '');
+        if ($name === '') {
+            return new JsonResponse(['error' => 'Le nom du groupe est requis'], 400);
+        }
+
+        $band = new Band();
+        $band->setNameBand($name);
+        $band->setDateCreation(new \DateTime());
+        $band->setNeedsSetup(false);
+
+        if (!empty($data['description'])) {
+            $band->setDescription($data['description']);
+        }
+
+        $em->persist($band);
+
+        // Add current user as admin
+        $member = new BandMember();
+        $member->setUser($currentUser);
+        $member->setBand($band);
+        $member->setIsAdmin(true);
+        $member->setJoinedAt(new \DateTime());
+        $em->persist($member);
+
+        $em->flush();
+
+        return new JsonResponse([
+            'id' => $band->getId(),
+            'nameBand' => $band->getNameBand(),
+            'message' => 'Groupe cree avec succes',
+        ], 201);
     }
 
     #[Route('/api/profile/preferences', name: 'api_profile_get_preferences', methods: ['GET'])]

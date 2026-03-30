@@ -89,6 +89,8 @@ export const usersService = {
 export const bandsService = {
     getAll: (): Promise<AxiosResponse<HydraCollection<Band>>> => api.get('/bands'),
     getOne: (id: number): Promise<AxiosResponse<Band>> => api.get(`/bands/${id}`),
+    search: (query: string): Promise<AxiosResponse<Band[]>> => api.get(`/search/bands?q=${encodeURIComponent(query)}`),
+    create: (data: { nameBand: string; description?: string }) => api.post('/bands/create', data),
     getPendingSetup: () => api.get('/profile/bands-pending-setup'),
     setupBand: (bandId: number, data: { nameBand: string; description?: string; styleId?: number | null }) => 
         api.post(`/bands/${bandId}/setup`, data),
@@ -119,6 +121,7 @@ export const profileService = {
 export const invitationsService = {
     checkShareBand: (userId: number) => api.get(`/users/${userId}/share-band`),
     sendInvitation: (receiverId: number) => api.post('/invitations/send', { receiverId }),
+    sendBandInvitation: (bandId: number, receiverId: number) => api.post(`/bands/${bandId}/invite`, { receiverId }),
     getPending: () => api.get('/invitations/pending'),
     respond: (invitationId: number, accept: boolean) => api.post(`/invitations/${invitationId}/respond`, { accept }),
 };

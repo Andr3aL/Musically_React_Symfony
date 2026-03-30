@@ -89,7 +89,7 @@ function Chat({ currentUser }: ChatProps) {
                         <span className="chat-user-instrument">{otherUser.mainInstrument || 'Musicien'}</span>
                         <span className="chat-user-style">{otherUser.mainStyle || ''}</span>
                         <Link to={`/musicien/${otherUser.id}`} className="btn-view-profile">
-                            👤 Voir profil
+                            Voir profil
                         </Link>
                     </div>
                     <Link to="/" className="btn-back">← Retour</Link>
@@ -133,7 +133,7 @@ function Chat({ currentUser }: ChatProps) {
                             className="chat-input"
                         />
                         <button type="submit" className="btn-send">
-                            ✈️ Envoyer
+                            Envoyer
                         </button>
                     </form>
                 </div>

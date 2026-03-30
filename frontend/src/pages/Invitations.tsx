@@ -10,6 +10,10 @@ interface Invitation {
         lastName: string;
         image?: string;
     };
+    band?: {
+        id: number;
+        nameBand: string;
+    };
     createdAt: string;
 }
 
@@ -77,7 +81,12 @@ function Invitations() {
             setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
 
             if (accept) {
-                showToast('Invitation acceptee ! Le groupe a ete cree avec succes.', 'success');
+                const inv = invitations.find(i => i.id === invitationId);
+                if (inv?.band) {
+                    showToast(`Vous avez rejoint le groupe "${inv.band.nameBand}" !`, 'success');
+                } else {
+                    showToast('Invitation acceptee ! Le groupe a ete cree.', 'success');
+                }
             } else {
                 showToast('Invitation refusee.', 'success');
             }
@@ -212,7 +221,10 @@ function Invitations() {
                                                     <div className="sender-info">
                                                         <h3>{invitation.sender.firstName} {invitation.sender.lastName}</h3>
                                                         <p className="invitation-text">
-                                                            souhaite créer un groupe avec vous
+                                                            {invitation.band
+                                                                ? <>vous invite a rejoindre <strong>{invitation.band.nameBand}</strong></>
+                                                                : <>souhaite creer un groupe avec vous</>
+                                                            }
                                                         </p>
                                                         <p className="invitation-date">
                                                             Reçue le {formatDate(invitation.createdAt)}

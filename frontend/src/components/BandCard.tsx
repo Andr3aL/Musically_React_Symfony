@@ -25,7 +25,7 @@ function BandCard({ band }: BandCardProps) {
             <div className="band-info">
                 <h3>{band.nameBand}</h3>
                 <p className="members">
-                    <span className="icon">👥</span> {band.membersCount || 1} membre{(band.membersCount || 1) > 1 ? 's' : ''}
+                    <span className="icon">👥</span> {band.members?.length || band.membersCount || 1} membre{(band.members?.length || band.membersCount || 1) > 1 ? 's' : ''}
                 </p>
                 <p className="date">
                     <span className="icon">📅</span> Créé le {formatDate(band.dateCreation)}

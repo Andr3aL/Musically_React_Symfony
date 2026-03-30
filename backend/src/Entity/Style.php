@@ -20,11 +20,11 @@ class Style
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'band:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'band:read'])]
     private ?string $nom_style = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

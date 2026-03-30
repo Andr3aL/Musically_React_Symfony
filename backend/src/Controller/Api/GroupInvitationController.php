@@ -331,6 +331,71 @@ class GroupInvitationController extends AbstractController
     }
 
     /**
+     * Invite a musician to join an existing band (admin only)
+     */
+    #[Route('/api/bands/{id}/invite', name: 'api_band_invite_member', methods: ['POST'])]
+    public function inviteToBand(
+        int $id,
+        Request $request,
+        #[CurrentUser] User $currentUser,
+        EntityManagerInterface $entityManager,
+        GroupInvitationRepository $invitationRepository
+    ): JsonResponse {
+        $band = $entityManager->getRepository(Band::class)->find($id);
+        if (!$band) {
+            return new JsonResponse(['error' => 'Groupe non trouve'], 404);
+        }
+
+        // Check admin
+        $isAdmin = false;
+        foreach ($band->getMembers() as $member) {
+            if ($member->getUser()->getId() === $currentUser->getId() && $member->isAdmin()) {
+                $isAdmin = true;
+                break;
+            }
+        }
+        if (!$isAdmin) {
+            return new JsonResponse(['error' => 'Vous devez etre admin du groupe'], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $receiver = $entityManager->getRepository(User::class)->find($data['receiverId'] ?? 0);
+        if (!$receiver) {
+            return new JsonResponse(['error' => 'Utilisateur non trouve'], 404);
+        }
+
+        if ($receiver->getId() === $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Vous ne pouvez pas vous inviter vous-meme'], 400);
+        }
+
+        // Check if already a member
+        foreach ($band->getMembers() as $member) {
+            if ($member->getUser()->getId() === $receiver->getId()) {
+                return new JsonResponse(['error' => 'Ce musicien est deja membre du groupe'], 400);
+            }
+        }
+
+        // Check pending invitation for this band
+        $existing = $invitationRepository->findPendingForBandAndReceiver($band, $receiver);
+        if ($existing) {
+            return new JsonResponse(['error' => 'Une invitation est deja en attente pour ce musicien'], 400);
+        }
+
+        $invitation = new GroupInvitation();
+        $invitation->setSender($currentUser);
+        $invitation->setReceiver($receiver);
+        $invitation->setCreatedBand($band); // Link to existing band
+
+        $entityManager->persist($invitation);
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'id' => $invitation->getId(),
+            'message' => 'Invitation envoyee',
+        ], 201);
+    }
+
+    /**
      * Get pending invitations for current user
      */
     #[Route('/api/invitations/pending', name: 'api_invitations_pending', methods: ['GET'])]
@@ -341,6 +406,13 @@ class GroupInvitationController extends AbstractController
         $invitations = $invitationRepository->findPendingForUser($currentUser);
 
         $data = array_map(function (GroupInvitation $invitation) {
+            $bandInfo = null;
+            if ($invitation->getCreatedBand()) {
+                $bandInfo = [
+                    'id' => $invitation->getCreatedBand()->getId(),
+                    'nameBand' => $invitation->getCreatedBand()->getNameBand(),
+                ];
+            }
             return [
                 'id' => $invitation->getId(),
                 'sender' => [
@@ -349,6 +421,7 @@ class GroupInvitationController extends AbstractController
                     'lastName' => $invitation->getSender()->getLastName(),
                     'image' => $invitation->getSender()->getImage(),
                 ],
+                'band' => $bandInfo,
                 'createdAt' => $invitation->getCreatedAt()->format('c'),
             ];
         }, $invitations);
@@ -370,15 +443,15 @@ class GroupInvitationController extends AbstractController
         $invitation = $invitationRepository->find($id);
 
         if (!$invitation) {
-            return new JsonResponse(['error' => 'Invitation non trouvée'], 404);
+            return new JsonResponse(['error' => 'Invitation non trouvee'], 404);
         }
 
         if ($invitation->getReceiver()->getId() !== $currentUser->getId()) {
-            return new JsonResponse(['error' => 'Vous ne pouvez pas répondre à cette invitation'], 403);
+            return new JsonResponse(['error' => 'Vous ne pouvez pas repondre a cette invitation'], 403);
         }
 
         if (!$invitation->isPending()) {
-            return new JsonResponse(['error' => 'Cette invitation a déjà été traitée'], 400);
+            return new JsonResponse(['error' => 'Cette invitation a deja ete traitee'], 400);
         }
 
         $data = json_decode($request->getContent(), true);
@@ -386,47 +459,70 @@ class GroupInvitationController extends AbstractController
 
         if ($accept) {
             $invitation->accept();
-            
-            // Create a new band with needsSetup = true
-            $band = new Band();
-            $band->setNameBand('Nouveau groupe'); // Temporary name
-            $band->setDateCreation(new \DateTime());
-            $band->setNeedsSetup(true);
-            $entityManager->persist($band);
-            
-            // Add sender as admin member
-            $senderMember = new BandMember();
-            $senderMember->setUser($invitation->getSender());
-            $senderMember->setBand($band);
-            $senderMember->setIsAdmin(true);
-            $senderMember->setJoinedAt(new \DateTime());
-            $entityManager->persist($senderMember);
-            
-            // Add receiver as member
-            $receiverMember = new BandMember();
-            $receiverMember->setUser($invitation->getReceiver());
-            $receiverMember->setBand($band);
-            $receiverMember->setIsAdmin(false);
-            $receiverMember->setJoinedAt(new \DateTime());
-            $entityManager->persist($receiverMember);
-            
-            // Link invitation to created band
-            $invitation->setCreatedBand($band);
+
+            if ($invitation->getCreatedBand() !== null) {
+                // JOIN existing band
+                $band = $invitation->getCreatedBand();
+                $alreadyMember = false;
+                foreach ($band->getMembers() as $member) {
+                    if ($member->getUser()->getId() === $currentUser->getId()) {
+                        $alreadyMember = true;
+                        break;
+                    }
+                }
+                if (!$alreadyMember) {
+                    $receiverMember = new BandMember();
+                    $receiverMember->setUser($currentUser);
+                    $receiverMember->setBand($band);
+                    $receiverMember->setIsAdmin(false);
+                    $receiverMember->setJoinedAt(new \DateTime());
+                    $entityManager->persist($receiverMember);
+                }
+            } else {
+                // CREATE new band
+                $band = new Band();
+                $band->setNameBand('Nouveau groupe');
+                $band->setDateCreation(new \DateTime());
+                $band->setNeedsSetup(true);
+                $entityManager->persist($band);
+
+                $senderMember = new BandMember();
+                $senderMember->setUser($invitation->getSender());
+                $senderMember->setBand($band);
+                $senderMember->setIsAdmin(true);
+                $senderMember->setJoinedAt(new \DateTime());
+                $entityManager->persist($senderMember);
+
+                $receiverMember = new BandMember();
+                $receiverMember->setUser($currentUser);
+                $receiverMember->setBand($band);
+                $receiverMember->setIsAdmin(false);
+                $receiverMember->setJoinedAt(new \DateTime());
+                $entityManager->persist($receiverMember);
+
+                $invitation->setCreatedBand($band);
+            }
         } else {
             $invitation->reject();
         }
 
         $entityManager->flush();
 
+        $band = $invitation->getCreatedBand();
+        $isJoinExisting = $accept && $band && !$band->isNeedsSetup();
+
         $response = [
             'id' => $invitation->getId(),
             'status' => $invitation->getStatus(),
-            'message' => $accept ? 'Invitation acceptée - Groupe créé !' : 'Invitation refusée',
+            'message' => $accept
+                ? ($isJoinExisting ? 'Vous avez rejoint le groupe !' : 'Invitation acceptee - Groupe cree !')
+                : 'Invitation refusee',
         ];
-        
-        if ($accept && $invitation->getCreatedBand()) {
-            $response['bandId'] = $invitation->getCreatedBand()->getId();
-            $response['needsSetup'] = true;
+
+        if ($accept && $band) {
+            $response['bandId'] = $band->getId();
+            $response['bandName'] = $band->getNameBand();
+            $response['needsSetup'] = $band->isNeedsSetup();
         }
 
         return new JsonResponse($response);

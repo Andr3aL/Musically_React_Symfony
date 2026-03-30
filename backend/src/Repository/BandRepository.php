@@ -16,28 +16,21 @@ class BandRepository extends ServiceEntityRepository
         parent::__construct($registry, Band::class);
     }
 
-    //    /**
-    //     * @return Band[] Returns an array of Band objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('b.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Band
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * @return Band[]
+     */
+    public function search(string $query): array
+    {
+        return $this->createQueryBuilder('b')
+            ->leftJoin('b.members', 'm')
+            ->leftJoin('m.user', 'u')
+            ->where('LOWER(b.nameBand) LIKE :q')
+            ->orWhere('LOWER(u.firstName) LIKE :q')
+            ->orWhere('LOWER(u.lastName) LIKE :q')
+            ->setParameter('q', '%' . mb_strtolower($query) . '%')
+            ->groupBy('b.id')
+            ->orderBy('b.nameBand', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

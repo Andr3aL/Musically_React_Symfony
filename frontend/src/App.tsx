@@ -92,7 +92,7 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Home currentUser={currentUser} />} />
                         <Route path="/musiciens" element={<Musiciens currentUser={currentUser} />} />
-                        <Route path="/groupes" element={<Groupes />} />
+                        <Route path="/groupes" element={<Groupes currentUser={currentUser} />} />
                         <Route path="/groupe/:id" element={<GroupeDetail currentUser={currentUser} />} />
                         <Route path="/profil" element={<Profil currentUser={currentUser} onUserUpdate={handleUserUpdate} />} />
                         <Route path="/musicien/:id" element={<MusicienDetail currentUser={currentUser} />} />
